@@ -17,6 +17,6 @@ def variance_image( image ):
 
     with np.nditer(var_img, op_flags=['readwrite']) as it:
         for x in it:
-            x[...] = ( (x/gain_slow) + np.power(read_noise_slow, 2) ) * (np.power( gain_slow, 2 ))
+            x[...] = ( (np.divide(x,gain_slow)) + np.power(read_noise_slow, 2) ) * (np.power( gain_slow, 2 ))
 
     return var_img

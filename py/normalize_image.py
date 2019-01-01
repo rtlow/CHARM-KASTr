@@ -5,6 +5,6 @@ def normalize_image(image, norm_flat):
     
     norm_image = copy.deepcopy(image)
     
-    norm_image = norm_image / np.amax(norm_flat)
+    norm_image = np.divide(norm_image, norm_flat)
         
     return norm_image

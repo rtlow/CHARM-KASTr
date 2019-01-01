@@ -8,18 +8,19 @@ def normalize_flat(flat, mask):
 
     m = copy.deepcopy(mask)
 
-    MEDIAN = []
+    GOOD_PIXELS = []
 
     for i in range(f.shape[0]):
         for j in range(f.shape[1]):
             if m[i][j] == 0:
-                MEDIAN.append(f[i][j])
+                GOOD_PIXELS.append(f[i][j])
 
 
-    median = np.median(MEDIAN)
+    median = np.median(GOOD_PIXELS)
+    
+    maximum = np.amax(GOOD_PIXELS)
 
-    f = f / median
-
+    f = np.divide(f, median)
 
     return f
 
