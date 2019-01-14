@@ -2,13 +2,13 @@ import glob
 
 import astropy.io.fits as fits
 
-biaspath = "/home/ryan/projects/CHARMKASTR/raw/data-2017-08-12-shane-Adam.Burgasser/red/test1035/bias/"
+biaspath = "/home/ryan/projects/KASTr_data/raw/data-2017-08-12-shane-Adam.Burgasser/red/test1035/bias/"
 
-flatpath = "/home/ryan/projects/CHARMKASTR/raw/data-2017-08-12-shane-Adam.Burgasser/red/test1035/flat/"
+flatpath = "/home/ryan/projects/KASTr_data/raw/data-2017-08-12-shane-Adam.Burgasser/red/test1035/flat/"
 
-sciencepath = "/home/ryan/projects/CHARMKASTR/raw/data-2017-08-12-shane-Adam.Burgasser/red/test1035/science/"
+sciencepath = "/home/ryan/projects/KASTr_data/raw/data-2017-08-12-shane-Adam.Burgasser/red/test1035/science/"
 
-arcpath = "/home/ryan/projects/CHARMKASTR/raw/data-2017-08-12-shane-Adam.Burgasser/red/test1035/arc/"
+arcpath = "/home/ryan/projects/KASTr_data/raw/data-2017-08-12-shane-Adam.Burgasser/red/test1035/arc/"
 
 BIAS = []
 
