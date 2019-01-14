@@ -12,5 +12,4 @@ def mask_image(image, mask):
             if mask[i][j] == 1:
                 masked_image[i][j] = image_median
                 
-                
     return masked_image
