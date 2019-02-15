@@ -148,9 +148,9 @@ def slit_fit(image):
     
     good_pk_pos = peak_pos[100:2500]
     
-    xrange = np.arange(100, 2500, 1)
+    xrange = range(100, 2500)
     
-    fit = np.poly1d(np.polyfit(xrange, good_pk_pos, 3))
+    fit = np.poly1d(np.polyfit(xrange, good_pk_pos, 4))
     
     return fit
 
@@ -162,7 +162,7 @@ def weight_function(image, slit_fit):
     for i in range(len(image[:,0])):
         slc = image[i,:]
         
-        cent_slc.append(slc[ int(slit_fit(i) - 10):int(slit_fit(i) + 10)])
+        cent_slc.append(slc[ int(np.around(slit_fit(i) - 10)):int(np.around(slit_fit(i) + 10))])
             
     w_slc = []
     
@@ -190,7 +190,7 @@ def extract_spectrum(image, slit_fit, weight_func):
     for i in range(len(image[:,0])):
         slc = image[i,:]
         
-        cent_slc.append(slc[ int(slit_fit(i) - 10):int(slit_fit(i) + 10)])
+        cent_slc.append(slc[ int(np.around(slit_fit(i) - 10)):int(np.around(slit_fit(i) + 10))])
     
     flx_slc = copy.deepcopy(cent_slc)
     
@@ -218,7 +218,7 @@ def extract_variance(var_image, slit_fit, weight_func):
     for i in range(len(var_image[:,0])):
         slc = var_image[i,:]
         
-        cent_slc.append(slc[ int(slit_fit(i) - 10):int(slit_fit(i) + 10)])
+        cent_slc.append(slc[ int(np.around(slit_fit(i) - 10)):int(np.around(slit_fit(i) + 10))])
         
     
     var_slc = copy.deepcopy(cent_slc)
