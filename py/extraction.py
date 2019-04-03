@@ -3,11 +3,11 @@ import copy
 import astropy.io.fits as fits
 
 '''
-function median() takes a list of astropy HDUL
+function cube_median() takes a list of astropy HDUL
 and returns the median of the data as a 2D
 numpy array; used to make median frames
 '''
-def median(HDUL):
+def cube_median(HDUL):
 
     #list to hold the data
     DLIST = []
@@ -112,7 +112,7 @@ def variance_image( image ):
     return var_img
 
 
-def normalize_image(image, norm_flat, mask):
+def flat_normalize_image(image, norm_flat, mask):
     
     norm_image = copy.deepcopy(image)
     
@@ -142,7 +142,7 @@ def mask_image(image, mask):
     return masked_image
 
 
-def slit_fit(image):
+def slit_fit_model(image):
     
     peak_pos = np.argmax(image, axis=1)
     
@@ -150,26 +150,93 @@ def slit_fit(image):
     
     xrange = range(100, 2500)
     
-    fit = np.poly1d(np.polyfit(xrange, good_pk_pos, 4))
+    fit = np.polyfit(xrange, good_pk_pos, 4)
     
     return fit
 
 
-def weight_function(image, slit_fit):
+#TODO create a function to generage centered slices, use them for rest of reduction
+#rather than loading in the whole image
+#also with a parameter for changing how far from the peak to go
+
+def gen_cent_slc(image, slit_fit, px_from_peak):
     
     cent_slc = []
     
     for i in range(len(image[:,0])):
         slc = image[i,:]
         
-        cent_slc.append(slc[ int(np.around(slit_fit(i) - 10)):int(np.around(slit_fit(i) + 10))])
-            
+        cent_slc.append(slc[ int(np.around(slit_fit(i) - px_from_peak)):int(np.around(slit_fit(i) + px_from_peak))])
+        
+    return cent_slc
+
+def create_norm_spatial_profile(cent_slcs):
+    prof_slcs = copy.deepcopy(cent_slcs)
+    for i in range(len(prof_slcs)):
+        prof_slcs[i] = prof_slcs[i] / np.amax(prof_slcs[i])
+     
+    prof = np.median(prof_slcs, axis=0)
+    return prof
+
+def background_subtract(c_slc, sp_prof, percent_threshold):
+        
+    cent_slc = copy.deepcopy(c_slc)
+    
+    #empty lists to hold the background slices and their indices
+    background_slices = []
+    '''
+       deciding which pixels are background
+       background pixels are areas where the spatial
+       profile is less than the given threshold
+    '''
+    for i in range(len(cent_slc)):
+        
+        #setting up empty lists to hold the background pixels
+        background_px = []
+        
+        
+        #if the pixel value in the slice is less than the threshold, it's background
+        for j in range(len(cent_slc[i])):
+            if (sp_prof[j] < percent_threshold):
+                background_px.append(cent_slc[i][j])
+        #appending the pixels and indices from this slice to the list for all slices
+        
+        #if the list isn't empty, append it, otherwise append the orignal slice
+        #since it is probably all background in that case
+        if background_px != []:
+            background_slices.append(background_px)
+        else:
+            background_slices.append(cent_slc[i])
+    
+    #empty list to hold the background value
+    background_vals = []
+    
+    #for each slice, find the median and store it
+    for i in range(len(background_slices)):
+        background_vals.append(np.median(background_slices[i]))
+        
+    #the signal is the difference between the centered slices and the background
+    signal_slc = copy.deepcopy(cent_slc)
+        
+    for i in range(len(signal_slc)):
+        signal_slc[i] = signal_slc[i] - background_vals[i]
+    
+    return signal_slc, background_vals
+
+def weight_function(c_slc):
+    
+    cent_slc = copy.deepcopy(c_slc)
     w_slc = []
     
     for i in range(len(cent_slc)):
         slc = cent_slc[i]
         
         smax = np.amax(slc)
+        
+        if (smax == 0):
+            w_slc.append(slc)
+            continue
+        
         smedian = np.median(slc)
         
         slc = slc - smedian
@@ -183,14 +250,20 @@ def weight_function(image, slit_fit):
     return w_func
 
 
-def extract_spectrum(image, slit_fit, weight_func):
+#only works for 4th order, will tweak later
+def slit_fit_shift(cent_slices, slit_fit_model, px_thresh):
+    signal_center = np.argmax(np.median(cent_slices, axis=0))
     
-    cent_slc = []
+    offset = signal_center - px_thresh
     
-    for i in range(len(image[:,0])):
-        slc = image[i,:]
-        
-        cent_slc.append(slc[ int(np.around(slit_fit(i) - 10)):int(np.around(slit_fit(i) + 10))])
+    shifted_model = copy.deepcopy(slit_fit_model)
+    
+    shifted_model[4] = shifted_model[4] + offset
+    
+    return shifted_model
+
+def extract_spectrum(cent_slc, weight_func):
+
     
     flx_slc = copy.deepcopy(cent_slc)
     
@@ -211,14 +284,7 @@ def extract_spectrum(image, slit_fit, weight_func):
     return spec
 
 
-def extract_variance(var_image, slit_fit, weight_func):
-    
-    cent_slc = []
-    
-    for i in range(len(var_image[:,0])):
-        slc = var_image[i,:]
-        
-        cent_slc.append(slc[ int(np.around(slit_fit(i) - 10)):int(np.around(slit_fit(i) + 10))])
+def extract_variance(cent_slc, weight_func):
         
     
     var_slc = copy.deepcopy(cent_slc)
