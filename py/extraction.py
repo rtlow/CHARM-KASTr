@@ -154,6 +154,11 @@ def slit_fit_model(image):
     
     return fit
 
+def slit_fit_trace(model):
+    
+    fit = np.poly1d(model)
+    
+    return fit
 
 #TODO create a function to generage centered slices, use them for rest of reduction
 #rather than loading in the whole image
