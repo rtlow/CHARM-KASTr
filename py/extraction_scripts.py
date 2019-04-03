@@ -26,13 +26,15 @@ def reduce_standard_first_stage(image_file, bias_frame, normalized_flat, mask, p
     
     spatial_profile = create_norm_spatial_profile(image_slices)
     
-    return image_slices, variance_slices, poly_slit_model, poly_slit_trace, spatial_profile
+    return image_slices, variance_slices, poly_slit_model, spatial_profile
     
-def reduce_science_first_stage(image_file, bias_frame, normalized_flat, mask, px_thresh, poly_slit_trace, poly_slit_model):
+def reduce_science_first_stage(image_file, bias_frame, normalized_flat, mask, px_thresh, poly_slit_model):
     
     image_data = copy.deepcopy(image_file[0].data)
     
     bias_subtracted_image = bias_subtract(image_data, bias_frame)
+    
+    print("Subtracted Bias")
     
     image_variance = variance_image(bias_subtracted_image)
     
@@ -43,6 +45,8 @@ def reduce_science_first_stage(image_file, bias_frame, normalized_flat, mask, px
     masked_image = mask_image(normalized_image, mask)
     
     masked_variance = mask_image(normalized_variance, mask)
+    
+    poly_slit_trace = slit_fit_trace(poly_slit_model)
     
     image_slices = gen_cent_slc(masked_image, poly_slit_trace, px_thresh)
     
