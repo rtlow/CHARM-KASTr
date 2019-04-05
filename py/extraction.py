@@ -256,8 +256,8 @@ def weight_function(c_slc):
 
 
 #only works for 4th order, will tweak later
-def slit_fit_shift(cent_slices, slit_fit_model, px_thresh):
-    signal_center = np.argmax(np.median(cent_slices, axis=0))
+def slit_fit_shift(cent_slices, slit_fit_model, spat_prof, px_thresh):
+    signal_center = np.argmax(spat_prof)
     
     offset = signal_center - px_thresh
     
